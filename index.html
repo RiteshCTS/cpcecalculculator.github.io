@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR & Citizenship Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        input, button { margin: 10px 0; padding: 10px; width: 100%; }
+        .result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Canada PR & Citizenship Eligibility Calculator</h2>
+    
+    <label>Landing Date in Canada:</label>
+    <input type="date" id="landingDate">
+    
+    <label>PR Issue Date:</label>
+    <input type="date" id="prIssueDate">
+    
+    <label>Days Spent Outside Canada (Landing Date to PR Issue Date):</label>
+    <input type="number" id="daysOutsidePrePR" placeholder="Enter days before PR was issued" min="0">
+    
+    <label>Days Spent Outside Canada (After PR Issue Date to Today):</label>
+    <input type="number" id="daysOutsidePostPR" placeholder="Enter days after PR was issued" min="0">
+    
+    <button onclick="calculateDates()">Calculate</button>
+    
+    <div class="result">
+        <h3>Results:</h3>
+        <p>PR Renewal Eligibility: <span id="prRenewal"></span></p>
+        <p>Citizenship Eligibility: <span id="citizenship"></span></p>
+    </div>
+
+    <script>
+        function calculateDates() {
+            const today = new Date('2025-03-12'); // Current date as per system
+            const landingDate = new Date(document.getElementById('landingDate').value);
+            const prIssueDate = new Date(document.getElementById('prIssueDate').value);
+            const daysOutsidePrePR = parseInt(document.getElementById('daysOutsidePrePR').value) || 0;
+            const daysOutsidePostPR = parseInt(document.getElementById('daysOutsidePostPR').value) || 0;
+
+            // Validation
+            if (!landingDate || !prIssueDate) {
+                alert("Please enter both landing and PR issue dates.");
+                return;
+            }
+            if (prIssueDate < landingDate) {
+                alert("PR Issue Date cannot be earlier than Landing Date.");
+                return;
+            }
+            if (daysOutsidePrePR < 0 || daysOutsidePostPR < 0) {
+                alert("Days spent outside Canada cannot be negative.");
+                return;
+            }
+
+            // Calculate days between landing and PR issue
+            const prePRDaysInCanada = Math.floor((prIssueDate - landingDate) / (1000 * 60 * 60 * 24)) - daysOutsidePrePR;
+
+            // Calculate total days since PR issue date
+            const daysSincePR = Math.floor((today - prIssueDate) / (1000 * 60 * 60 * 24));
+            const postPRDaysInCanada = daysSincePR - daysOutsidePostPR;
+
+            // PR Renewal Calculation
+            const prExpiryDate = new Date(prIssueDate);
+            prExpiryDate.setFullYear(prExpiryDate.getFullYear() + 5);
+            const daysInCanadaLast5Years = postPRDaysInCanada; // Only post-PR days count for renewal
+            const prRenewalStatus = daysInCanadaLast5Years >= 730 
+                ? `Eligible now (as of ${today.toDateString()}). PR expires on ${prExpiryDate.toDateString()}.`
+                : `Not yet eligible. You need ${730 - daysInCanadaLast5Years} more days in Canada.`;
+
+            // Citizenship Calculation
+            const prePRCredit = Math.min(prePRDaysInCanada * 0.5, 365); // Half-days before PR, max 365
+            const totalDaysInCanada = prePRCredit + postPRDaysInCanada;
+            let citizenshipStatus;
+            if (totalDaysInCanada >= 1095) {
+                citizenshipStatus = `Eligible now (as of ${today.toDateString()}).`;
+            } else {
+                const daysRemaining = 1095 - totalDaysInCanada;
+                const citizenshipDate = new Date(today);
+                citizenshipDate.setDate(citizenshipDate.getDate() + Math.ceil(daysRemaining * 2)); // Rough estimate
+                citizenshipStatus = `Not yet eligible. You need ${Math.ceil(daysRemaining)} more days. Earliest eligibility: ${citizenshipDate.toDateString()}.`;
+            }
+
+            // Display Results
+            document.getElementById('prRenewal').textContent = prRenewalStatus;
+            document.getElementById('citizenship').textContent = citizenshipStatus;
+        }
+    </script>
+</body>
+</html>
