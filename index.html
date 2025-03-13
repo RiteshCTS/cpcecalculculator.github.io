@@ -11,6 +11,7 @@
             max-width: 800px;
             margin: 0 auto;
             line-height: 1.6;
+            position: relative;
         }
         h2 {
             text-align: center;
@@ -48,6 +49,24 @@
         .result h3 {
             margin-top: 0;
         }
+        .flag-left {
+            position: absolute;
+            left: 0;
+            top: 20px;
+            width: 100px;
+        }
+        .flag-right {
+            position: absolute;
+            right: 0;
+            top: 20px;
+            width: 100px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #666;
+        }
         @media (max-width: 600px) {
             body {
                 padding: 10px;
@@ -55,10 +74,16 @@
             h2 {
                 font-size: 1.5em;
             }
+            .flag-left, .flag-right {
+                width: 60px;
+            }
         }
     </style>
 </head>
 <body>
+    <img src="https://upload.wikimedia.org/wikipedia/en/c/cf/Flag_of_Canada.svg" alt="Canada Flag" class="flag-left">
+    <img src="https://upload.wikimedia.org/wikipedia/en/c/cf/Flag_of_Canada.svg" alt="Canada Flag" class="flag-right">
+    
     <h2>Canada PR & Citizenship Eligibility Calculator</h2>
     
     <label for="landingDate">Landing Date in Canada:</label>
@@ -80,6 +105,10 @@
         <p>PR Renewal Eligibility: <span id="prRenewal"></span></p>
         <p>Citizenship Eligibility: <span id="citizenship"></span></p>
     </div>
+
+    <footer>
+        All rights reserved to Ritesh Rathi. Contact: riteshrathi81@gmail.com
+    </footer>
 
     <script>
         function calculateDates() {
@@ -118,9 +147,15 @@
             // PR Renewal Calculation (730 days in last 5 years)
             const prExpiryDate = new Date(prIssueDate);
             prExpiryDate.setFullYear(prExpiryDate.getFullYear() + 5);
-            const prRenewalStatus = postPRDaysInCanada >= 730 
-                ? `Eligible now (as of ${today.toLocaleDateString()}). PR expires on ${prExpiryDate.toLocaleDateString()}.`
-                : `Not yet eligible. You need ${730 - postPRDaysInCanada} more days in Canada.`;
+            let prRenewalStatus;
+            if (postPRDaysInCanada >= 730) {
+                prRenewalStatus = `Eligible now (as of ${today.toLocaleDateString()}). PR expires on ${prExpiryDate.toLocaleDateString()}.`;
+            } else {
+                const daysRemainingPR = 730 - postPRDaysInCanada;
+                const prEligibilityDate = new Date(today);
+                prEligibilityDate.setDate(prEligibilityDate.getDate() + Math.ceil(daysRemainingPR));
+                prRenewalStatus = `Not yet eligible. You need ${Math.ceil(daysRemainingPR)} more days. Earliest eligibility: ${prEligibilityDate.toLocaleDateString()}. PR expires on ${prExpiryDate.toLocaleDateString()}.`;
+            }
 
             // Citizenship Calculation (1,095 days total)
             let citizenshipStatus;
