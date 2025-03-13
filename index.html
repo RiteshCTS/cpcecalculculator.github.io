@@ -12,10 +12,12 @@
             margin: 0 auto;
             line-height: 1.6;
             position: relative;
+            padding-top: 120px; /* Added space for flags on top */
         }
         h2 {
             text-align: center;
             color: #333;
+            margin-top: 0;
         }
         label {
             display: block;
@@ -51,15 +53,15 @@
         }
         .flag-left {
             position: absolute;
-            left: 0;
-            top: 20px;
-            width: 100px;
+            left: 10px;
+            top: 10px;
+            width: 80px;
         }
         .flag-right {
             position: absolute;
-            right: 0;
-            top: 20px;
-            width: 100px;
+            right: 10px;
+            top: 10px;
+            width: 80px;
         }
         footer {
             text-align: center;
@@ -70,12 +72,22 @@
         @media (max-width: 600px) {
             body {
                 padding: 10px;
+                padding-top: 100px; /* Adjusted for mobile */
             }
             h2 {
-                font-size: 1.5em;
+                font-size: 1.2em; /* Smaller heading on mobile */
+                padding: 0 60px; /* Space for flags */
+                line-height: 1.4;
             }
             .flag-left, .flag-right {
-                width: 60px;
+                width: 50px; /* Smaller flags on mobile */
+                top: 5px;
+            }
+            .flag-left {
+                left: 5px;
+            }
+            .flag-right {
+                right: 5px;
             }
         }
     </style>
