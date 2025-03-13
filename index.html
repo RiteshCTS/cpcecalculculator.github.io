@@ -3,27 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PR & Citizenship Calculator</title>
+    <title>Canada PR & Citizenship Calculator</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-        input, button { margin: 10px 0; padding: 10px; width: 100%; }
-        .result { margin-top: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .result h3 {
+            margin-top: 0;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+        }
     </style>
 </head>
 <body>
     <h2>Canada PR & Citizenship Eligibility Calculator</h2>
     
-    <label>Landing Date in Canada:</label>
-    <input type="date" id="landingDate">
+    <label for="landingDate">Landing Date in Canada:</label>
+    <input type="date" id="landingDate" required>
     
-    <label>PR Issue Date:</label>
-    <input type="date" id="prIssueDate">
+    <label for="prIssueDate">PR Issue Date:</label>
+    <input type="date" id="prIssueDate" required>
     
-    <label>Days Spent Outside Canada (Landing Date to PR Issue Date):</label>
-    <input type="number" id="daysOutsidePrePR" placeholder="Enter days before PR was issued" min="0">
+    <label for="daysOutsidePrePR">Days Spent Outside Canada (Landing to PR):</label>
+    <input type="number" id="daysOutsidePrePR" placeholder="Enter days before PR" min="0" required>
     
-    <label>Days Spent Outside Canada (After PR Issue Date to Today):</label>
-    <input type="number" id="daysOutsidePostPR" placeholder="Enter days after PR was issued" min="0">
+    <label for="daysOutsidePostPR">Days Spent Outside Canada (PR to Today):</label>
+    <input type="number" id="daysOutsidePostPR" placeholder="Enter days after PR" min="0" required>
     
     <button onclick="calculateDates()">Calculate</button>
     
@@ -35,15 +83,15 @@
 
     <script>
         function calculateDates() {
-            const today = new Date('2025-03-12'); // Current date as per system
+            const today = new Date('2025-03-12'); // Hardcoded for testing; use new Date() for live
             const landingDate = new Date(document.getElementById('landingDate').value);
             const prIssueDate = new Date(document.getElementById('prIssueDate').value);
             const daysOutsidePrePR = parseInt(document.getElementById('daysOutsidePrePR').value) || 0;
             const daysOutsidePostPR = parseInt(document.getElementById('daysOutsidePostPR').value) || 0;
 
             // Validation
-            if (!landingDate || !prIssueDate) {
-                alert("Please enter both landing and PR issue dates.");
+            if (isNaN(landingDate) || isNaN(prIssueDate)) {
+                alert("Please enter valid dates.");
                 return;
             }
             if (prIssueDate < landingDate) {
@@ -55,32 +103,34 @@
                 return;
             }
 
-            // Calculate days between landing and PR issue
-            const prePRDaysInCanada = Math.floor((prIssueDate - landingDate) / (1000 * 60 * 60 * 24)) - daysOutsidePrePR;
+            // Pre-PR Calculation
+            const prePRDaysTotal = Math.floor((prIssueDate - landingDate) / (1000 * 60 * 60 * 24));
+            const prePRDaysInCanada = prePRDaysTotal - daysOutsidePrePR;
+            const prePRCredit = Math.min(prePRDaysInCanada * 0.5, 365);
 
-            // Calculate total days since PR issue date
-            const daysSincePR = Math.floor((today - prIssueDate) / (1000 * 60 * 60 * 24));
-            const postPRDaysInCanada = daysSincePR - daysOutsidePostPR;
+            // Post-PR Calculation
+            const postPRDaysTotal = Math.floor((today - prIssueDate) / (1000 * 60 * 60 * 24));
+            const postPRDaysInCanada = postPRDaysTotal - daysOutsidePostPR;
 
-            // PR Renewal Calculation
+            // Total Residency for Citizenship
+            const totalDaysInCanada = prePRCredit + postPRDaysInCanada;
+
+            // PR Renewal Calculation (730 days in last 5 years)
             const prExpiryDate = new Date(prIssueDate);
             prExpiryDate.setFullYear(prExpiryDate.getFullYear() + 5);
-            const daysInCanadaLast5Years = postPRDaysInCanada; // Only post-PR days count for renewal
-            const prRenewalStatus = daysInCanadaLast5Years >= 730 
-                ? `Eligible now (as of ${today.toDateString()}). PR expires on ${prExpiryDate.toDateString()}.`
-                : `Not yet eligible. You need ${730 - daysInCanadaLast5Years} more days in Canada.`;
+            const prRenewalStatus = postPRDaysInCanada >= 730 
+                ? `Eligible now (as of ${today.toLocaleDateString()}). PR expires on ${prExpiryDate.toLocaleDateString()}.`
+                : `Not yet eligible. You need ${730 - postPRDaysInCanada} more days in Canada.`;
 
-            // Citizenship Calculation
-            const prePRCredit = Math.min(prePRDaysInCanada * 0.5, 365); // Half-days before PR, max 365
-            const totalDaysInCanada = prePRCredit + postPRDaysInCanada;
+            // Citizenship Calculation (1,095 days total)
             let citizenshipStatus;
             if (totalDaysInCanada >= 1095) {
-                citizenshipStatus = `Eligible now (as of ${today.toDateString()}).`;
+                citizenshipStatus = `Eligible now (as of ${today.toLocaleDateString()}).`;
             } else {
                 const daysRemaining = 1095 - totalDaysInCanada;
                 const citizenshipDate = new Date(today);
-                citizenshipDate.setDate(citizenshipDate.getDate() + Math.ceil(daysRemaining * 2)); // Rough estimate
-                citizenshipStatus = `Not yet eligible. You need ${Math.ceil(daysRemaining)} more days. Earliest eligibility: ${citizenshipDate.toDateString()}.`;
+                citizenshipDate.setDate(citizenshipDate.getDate() + Math.ceil(daysRemaining));
+                citizenshipStatus = `Not yet eligible. You need ${Math.ceil(daysRemaining)} more days. Earliest eligibility: ${citizenshipDate.toLocaleDateString()}.`;
             }
 
             // Display Results
